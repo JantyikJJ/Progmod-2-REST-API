@@ -1,0 +1,19 @@
+{
+  "name": "progmod2",
+  "version": "1.0.0",
+  "description": "RestAPI for the assessment",
+  "main": "index.js",
+  "scripts": {
+    "test": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JantyikJJ/Progmod-2-REST-API.git"
+  },
+  "author": "BigD-emand",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/JantyikJJ/Progmod-2-REST-API/issues"
+  },
+  "homepage": "https://github.com/JantyikJJ/Progmod-2-REST-API#readme"
+}
