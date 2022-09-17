@@ -1,6 +1,7 @@
 const Pool = require("pg").Pool;
 const readline = require("readline");
 const utils = require("../modules/utils");
+
 module.exports = class Db {
     constructor(app) {
         this.app = app;
@@ -11,7 +12,17 @@ module.exports = class Db {
         this.#ensureNecessities(ready);
     }
 
-    createUser(username, password, email, firstname, lastname, admin, callback) {
+    getUsers(limit, page, callback) {
+        this.pool.query(`SELECT * FROM users LIMIT $1 OFFSET $2`, [ limit, page * limit ], (error, result) => {
+            if (error) {
+                callback(false);
+            } else {
+                callback(result.rows);
+            }
+        });
+    }
+
+    createUser(username, password, firstname, lastname, admin, callback) {
         this.pool.query(`SELECT * FROM users WHERE username = $1`, [username], (error, result) => {
             if (error) {
                 this.app.logger.error("Db", error);
@@ -21,7 +32,7 @@ module.exports = class Db {
                     callback(-2);
                 } else {
                     const pwd = utils.hashPw(password);
-                    this.pool.query(`INSERT INTO users (username, password, email, firstname, lastname, admin) VALUES ($1, $2, $3, $4, $5, $6)`, [username, pwd, email, firstname, lastname, admin], (error, result) => {
+                    this.pool.query(`INSERT INTO users (username, password, firstname, lastname, admin) VALUES ($1, $2, $3, $4, $5, $6)`, [username, pwd, firstname, lastname, admin], (error, result) => {
                         if (error) {
                             this.app.logger.error("Db", error);
                             callback(-1);
@@ -30,6 +41,41 @@ module.exports = class Db {
                         }
                     });
                 }
+            }
+        });
+    }
+
+    validateUser(username, password, callback) {
+        this.pool.query(`SELECT * FROM users WHERE username = $1`, [ username ], (error, result) => {
+            if (error || result.rowCount === 0 || !utils.comparePw(password, result.rows[0].password)) {
+                callback(false);
+            } else {
+                callback({
+                    username: result.rows[0].username,
+                    admin: result.rows[0].admin
+                });
+            }
+        });
+    }
+
+    updateUser(username, password, firstname, lastname, admin, callback) {
+        let pwd = utils.hashPw(password);
+
+        this.pool.query(`UPDATE users SET password = $1, firstname = $2, lastname = $3, admin = $4 WHERE username = $5`, [ pwd, firstname, lastname, admin, username ], (error, result) => {
+            if (error) {
+                callback(false);
+            } else {
+                callback(true);
+            }
+        });
+    }
+
+    deleteUser(username, callback) {
+        this.pool.query(`DELETE FROM users WHERE username = $1`, [ username ], (error, result) => {
+            if (error) {
+                callback(false);
+            } else {
+                callback(true);
             }
         });
     }
@@ -52,7 +98,6 @@ module.exports = class Db {
             ID SERIAL PRIMARY KEY,
             username VARCHAR(55) NOT NULL,
             password VARCHAR(72) NOT NULL,
-            email VARCHAR(320),
             firstname VARCHAR(50),
             lastname VARCHAR(50),
             admin boolean
@@ -100,7 +145,7 @@ module.exports = class Db {
                         let password = "";
                         while (!(password = utils.checkPassword(await rl.questionAsync("Password: "))));
 
-                        this.createUser(username, password, "", "", "", true, async result => {
+                        this.createUser(username, password, "", "", true, async result => {
                             switch (result) {
                                 case -1:
                                     this.app.logger.error("Db", "Error happened while checking username or inserting user data.");

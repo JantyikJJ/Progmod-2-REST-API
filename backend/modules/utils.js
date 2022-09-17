@@ -1,6 +1,5 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const refreshTokens = [];
 
 module.exports = {
     checkUsername: function(username) {
@@ -19,16 +18,40 @@ module.exports = {
     comparePw: function(password, hashed) {
         return bcrypt.compareSync(password, hashed)
     },
-    genTokens: function(user) {
+    genTokens: function(user, app) {
         const refreshToken = jwt.sign(user, process.env.JWT_REFRESH_SECRET, { expiresIn: process.env.JWT_REFRESH_REFRESH });
-        refreshTokens.push(refreshToken);
+        app.refreshTokens = app.refreshTokens || [];
+        app.refreshTokens.push(refreshToken);
 
         return {
             access: jwt.sign(user, process.env.JWT_ACCESS_SECRET, { expiresIn: process.env.JWT_ACCESS_REFRESH }),
             refresh: refreshToken
         };
     },
-    refreshAccess: function(token) {
-        
+    verifyToken: function(request, response, next) {
+        if (request.headers["Authorization"]) {
+            const token = request.headers["Authorization"].split(" ")[1];
+    
+            if (token === null) {
+                response.status(401).json({
+                    error: "BAD_ACCESS_TOKEN"
+                });
+            } else {
+                jwt.verify(token, process.env.JWT_ACCESS_SECRET, (error, user) => {
+                    if (error) {
+                        response.status(403).json({
+                            error: "BAD_ACCESS_TOKEN"
+                        });
+                    } else {
+                        request.user = user;
+                        next();
+                    }
+                })
+            }
+        } else {
+            response.status(401).json({
+                error: "BAD_ACCESS_TOKEN"
+            });
+        }
     }
 }
