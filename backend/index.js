@@ -11,9 +11,6 @@ env.config();
 const app = express();
 app.logger = new Logger(process.env.LOGFILE);
 
-app.db = new Db(app);
-app.db.init();
-
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -31,6 +28,11 @@ fs.readdirSync("./routes").forEach(path => {
 });
 app.logger.log("Main", "Routes initialized!");
 
-app.listen(process.env.PORT, () => {
-    app.logger.log("Main", `RESTful API started on port ${process.env.PORT}!`);
+app.db = new Db(app);
+app.db.init(() => {
+    app.logger.log("Db", "Database ready!");
+    
+    app.listen(process.env.PORT, () => {
+        app.logger.log("Main", `RESTful API started on port ${process.env.PORT}!`);
+    });
 });

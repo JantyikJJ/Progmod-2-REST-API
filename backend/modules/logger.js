@@ -1,7 +1,7 @@
 const fs = require("fs")
 
 function n(num) {
-    return num.toLocaleString('en-US', { minimumIntegerDigits: 2, useGrouping:false })
+    return num.toLocaleString("en-US", { minimumIntegerDigits: 2, useGrouping:false })
 }
 
 module.exports = class Logger {
@@ -15,7 +15,7 @@ module.exports = class Logger {
         }
         this.file = undefined;
         if (filename && filename.trim() != "") {
-            this.file = fs.openSync(filename.trim(), "w");
+            this.file = fs.openSync(filename.trim(), 'w');
         }
     }
 
