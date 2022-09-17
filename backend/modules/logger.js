@@ -19,21 +19,18 @@ module.exports = class Logger {
         }
     }
 
-    log(...msg) {
-        this.#innerLog(console.log, "Info", msg);
+    log(module, ...msg) {
+        this.#innerLog(console.log, module, "Info", msg);
     }
-    rq(type, ...msg) {
-        this.#innerLog(console.log, type, msg);
-    }
-    error(...msg) {
-        this.#innerLog(console.error, "Error", msg);
+    error(module, ...msg) {
+        this.#innerLog(console.error, module, "Error", msg);
     }
 
-    #innerLog(channel, severity, ...msg) {
+    #innerLog(channel, module, severity, ...msg) {
         const time = new Date();
         
         let compiledMsg = `[${time.getFullYear()}/${n(time.getMonth())}/${n(time.getDay())} `
-                        + `${n(time.getHours())}:${n(time.getMinutes())}:${n(time.getSeconds())}] [${severity}] ${msg.join(" ")}`;
+                        + `${n(time.getHours())}:${n(time.getMinutes())}:${n(time.getSeconds())}] [${module}] [${severity}] ${msg.join(" ")}`;
         channel(compiledMsg);
         if (this.file) {
             fs.writeSync(this.file, compiledMsg);
