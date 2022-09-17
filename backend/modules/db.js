@@ -1,7 +1,6 @@
 const Pool = require("pg").Pool;
 const readline = require("readline");
-const bcrypt = require("bcrypt");
-
+const utils = require("../modules/utils");
 module.exports = class Db {
     constructor(app) {
         this.app = app;
@@ -21,7 +20,7 @@ module.exports = class Db {
                 if (result.rowCount !== 0) {
                     callback(-2);
                 } else {
-                    const pwd = bcrypt.hashSync(password, 10);
+                    const pwd = utils.hashPw(password);
                     this.pool.query(`INSERT INTO users (username, password, email, firstname, lastname, admin) VALUES ($1, $2, $3, $4, $5, $6)`, [username, pwd, email, firstname, lastname, admin], (error, result) => {
                         if (error) {
                             this.app.logger.error("Db", error);
@@ -94,12 +93,12 @@ module.exports = class Db {
                     const createAdmin = async () => {
                         rl.stdoutMuted = false;
                         let username = "";
-                        while (!(username = this.#checkUsername(await rl.questionAsync("Username: "))));
+                        while (!(username = utils.checkUsername(await rl.questionAsync("Username: "))));
 
                         rl.stdoutMuted = true;
 
                         let password = "";
-                        while (!(password = this.#checkPassword(await rl.questionAsync("Password: "))));
+                        while (!(password = utils.checkPassword(await rl.questionAsync("Password: "))));
 
                         this.createUser(username, password, "", "", "", true, async result => {
                             switch (result) {
@@ -126,15 +125,5 @@ module.exports = class Db {
                 }
             }
         })
-    }
-
-    #checkUsername(un) {
-        if (un.trim() !== "" && /[a-zA-Z0-9]*/.test(un)) return un;
-        return false;
-    }
-
-    #checkPassword(pw) {
-        if (pw.trim() !== "" && pw.length > 7) return pw;
-        return false;
     }
 }
