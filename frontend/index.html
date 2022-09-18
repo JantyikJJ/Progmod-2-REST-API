@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="index.css" />
+    <script src="index.js" defer></script>
+    <title>User control panel</title>
+</head>
+<body>
+    <header id="header" class="bottom-shadow">
+        <a class="header-item">
+            User control panel
+        </a>
+        <a class="header-item logout button">
+            Logout
+        </a>
+    </header>
+    <div id="login">
+        <form>
+            <table>
+                <tr>
+                    <td>
+                        Username: 
+                    </td>
+                    <td>
+                        <input type="text" name="username" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Password: 
+                    </td>
+                    <td>
+                        <input type="password" name="password" />
+                    </td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>
+                        <input type="submit" value="Login" />
+                    </td>
+                </tr>
+            </table>
+        </form>
+    </div>
+
+    <div id="userdata">
+        <div class="container">
+            <span>Welcome </span>
+            <span id="username"></span>!
+        </div>
+    </div>
+    <div id="users">
+        <div id="add">
+            <form id="addform">
+                <table>
+                    <caption>
+                        Add user
+                    </caption>
+                    <tr>
+                        <td>
+                            Username: 
+                        </td>
+                        <td>
+                            <input type="text" name="username" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Password: 
+                        </td>
+                        <td>
+                            <input type="password" name="password" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            First name: 
+                        </td>
+                        <td>
+                            <input type="text" name="firstname" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Last name: 
+                        </td>
+                        <td>
+                            <input type="text" name="lastname" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Admin: 
+                        </td>
+                        <td>
+                            <input type="checkbox" name="admin" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>
+                            <input type="submit" value="Create user" />
+                        </td>
+                    </tr>
+                </table>
+            </form>
+        </div>
+        <div id="edit">
+            <form id="editform">
+                <table>
+                    <caption>
+                        Edit user
+                    </caption>
+                    <tr>
+                        <td>
+                            Username: 
+                        </td>
+                        <td>
+                            <input type="text" name="username" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Password: 
+                        </td>
+                        <td>
+                            <input type="password" name="password" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            First name: 
+                        </td>
+                        <td>
+                            <input type="text" name="firstname" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Last name: 
+                        </td>
+                        <td>
+                            <input type="text" name="lastname" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Admin: 
+                        </td>
+                        <td>
+                            <input type="checkbox" name="admin" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>
+                            <input type="submit" value="Update user" />
+                        </td>
+                    </tr>
+                </table>
+            </form>
+        </div>
+        <div id="delete">
+            <form id="deleteform">
+                <table>
+                    <caption>
+                        Delete user
+                    </caption>
+                    <tr>
+                        <td>
+                            Username: 
+                        </td>
+                        <td>
+                            <input type="text" name="username" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>
+                            <input type="submit" value="Delete user" />
+                        </td>
+                    </tr>
+                </table>
+            </form>
+        </div>
+        <div id="table">
+            <table>
+                
+            </table>
+        </div>
+    </div>
+</body>
+</html>

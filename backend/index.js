@@ -2,6 +2,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const fs = require("fs");
 const env = require("dotenv");
+const cors = require("cors");
 
 const Logger = require("./modules/logger.js");
 const Db = require("./modules/db.js");
@@ -11,6 +12,7 @@ env.config();
 const app = express();
 app.logger = new Logger(process.env.LOGFILE);
 
+app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 

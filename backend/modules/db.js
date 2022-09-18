@@ -13,13 +13,22 @@ module.exports = class Db {
     }
 
     getUsers(limit, page, callback) {
-        this.pool.query(`SELECT * FROM users LIMIT $1 OFFSET $2`, [ limit, page * limit ], (error, result) => {
+        this.pool.query(`SELECT COUNT(*) AS count FROM users`, (error, count) => {
             if (error) {
                 callback(false);
             } else {
-                callback(result.rows);
+                this.pool.query(`SELECT * FROM users LIMIT $1 OFFSET $2`, [ limit, page * limit ], (error, result) => {
+                    if (error) {
+                        callback(false);
+                    } else {
+                        callback({
+                            users: result.rows,
+                            length: count.rows[0].count
+                        });
+                    }
+                });
             }
-        });
+        })
     }
 
     createUser(username, password, firstname, lastname, admin, callback) {
@@ -32,7 +41,7 @@ module.exports = class Db {
                     callback(-2);
                 } else {
                     const pwd = utils.hashPw(password);
-                    this.pool.query(`INSERT INTO users (username, password, firstname, lastname, admin) VALUES ($1, $2, $3, $4, $5, $6)`, [username, pwd, firstname, lastname, admin], (error, result) => {
+                    this.pool.query(`INSERT INTO users (username, password, firstname, lastname, admin) VALUES ($1, $2, $3, $4, $5)`, [username, pwd, firstname, lastname, admin], (error, result) => {
                         if (error) {
                             this.app.logger.error("Db", error);
                             callback(-1);

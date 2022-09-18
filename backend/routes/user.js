@@ -6,7 +6,7 @@ function loginUser(request, response) {
     const password = request.body.password;
 
     if (utils.checkUsername(username) && utils.checkPassword(password)) {
-        db.validateUser(username, password, result => {
+        request.app.db.validateUser(username, password, result => {
             if (result) {
                 response.status(200).json(utils.genTokens({
                     username: result.username,
@@ -26,10 +26,10 @@ function loginUser(request, response) {
 }
 function getUsers(request, response) {
     if (request.user.admin) {
-        const limit = Number(request.body.limit ?? 50);
-        const page = Number(request.body.page ?? 0);
+        const limit = Number(request.query.limit ?? 50);
+        const page = Number(request.query.page ?? 0);
     
-        db.getUsers(limit, page, users => {
+        request.app.db.getUsers(limit, page, users => {
             if (users) {
                 response.status(200).json(users);
             } else {
@@ -45,19 +45,22 @@ function getUsers(request, response) {
     }
 }
 function refreshToken(request, response) {
-    app.refreshTokens = app.refreshTokens || [];
+    request.app.refreshTokens = request.app.refreshTokens || [];
     const token = request.body.token;
 
-    if (app.refreshTokens.includes(token)) {
+    if (request.app.refreshTokens.includes(token)) {
         jwt.verify(token, process.env.JWT_REFRESH_SECRET, (error, user) => {
-            app.refreshTokens = app.refreshTokens.filter(t => t != token);
+            request.app.refreshTokens = request.app.refreshTokens.filter(t => t != token);
 
             if (error) {
                 response.status(401).json({
                     error: "Missing or invalid refresh token."
                 });
             } else {
-                response.status(200).json(utils.genTokens(user));
+                response.status(200).json(utils.genTokens({
+                    username: user.username,
+                    admin: user.admin
+                }, request.app));
             }
         });
     } else {
@@ -67,16 +70,15 @@ function refreshToken(request, response) {
     }
 }
 function logoutUser(request, response) {
-    if (request.body.token && app.refreshTokens.includes(request.body.token)) {
-        app.refreshTokens = app.refreshTokens.filter(t => t != request.body.token);
-        response.status(200).json({
-            status: "Success."
-        });
-    } else {
-        response.status(401).json({
-            error: "Unauthorized."
-        });
+    request.app.refreshTokens = request.app.refreshTokens || [];
+
+    if (request.body.token && request.app.refreshTokens.includes(request.body.token)) {
+        request.app.refreshTokens = request.app.refreshTokens.filter(t => t != request.body.token);
+        
     }
+    response.status(200).json({
+        status: "Success."
+    });
 }
 function createUser(request, response) {
     if (request.user.admin) {
@@ -84,23 +86,23 @@ function createUser(request, response) {
         const password = request.body.password;
         const firstname = request.body.firstname;
         const lastname = request.body.lastname;
-        const admin = request.body.admin === "on";
+        const admin = request.body.admin;
 
         if (utils.checkUsername(username) && utils.checkPassword(password)) {
-            app.db.createUser(username, password, firstname, lastname, admin, result => {
+            request.app.db.createUser(username, password, firstname, lastname, admin, result => {
                 switch (result) {
                     case -1:
-                        response.status("500").json({
+                        response.status(500).json({
                             error: "Database error."
                         });
                         break;
                     case -2:
-                        response.status("400").json({
+                        response.status(400).json({
                             error: "Username is taken."
                         });
                         break;
                     case 0:
-                        response.status("200").json({
+                        response.status(200).json({
                             status: "Success."
                         });
                         break;
@@ -108,7 +110,7 @@ function createUser(request, response) {
             })
         } else {
             response.status(401).json({
-                error: "Unauthorized."
+                error: "Bad username or password."
             });
         }
 
@@ -120,7 +122,7 @@ function createUser(request, response) {
 }
 function deleteUser(request, response) {
     if (request.user.admin || request.user.username.toLowerCase() === request.body.target_user.toLowerCase()) {
-        db.deleteUser(request.body.target_user, result => {
+        request.app.db.deleteUser(request.body.target_user, result => {
             if (result) {
                 response.status(200).json({
                     status: "Success."
@@ -143,14 +145,14 @@ function updateUser(request, response) {
         const password = request.body.password;
         const firstname = request.body.firstname;
         const lastname = request.body.lastname;
-        const admin = request.body.admin === "on";
+        const admin = request.body.admin;
 
         if (!request.user.admin && admin) {
             response.status(401).json({
                 error: "Unauthorized, you cannot make yourself admin."
             });
         } else {
-            db.updateUser(username, password, firstname, lastname, admin, result => {
+            request.app.db.updateUser(username, password, firstname, lastname, admin, result => {
                 if (result) {
                     response.status(200).json({
                         status: "Success."
@@ -172,9 +174,9 @@ function updateUser(request, response) {
 module.exports = {
     init: app => {
         app.post("/user/login", loginUser);
-        app.get("/user/get", getUsers);
         app.post("/user/refresh", refreshToken);
-        app.get("/user/logout", utils.verifyToken, logoutUser);
+        app.get("/user/get", utils.verifyToken, getUsers);
+        app.post("/user/logout", utils.verifyToken, logoutUser);
         app.post("/user/create", utils.verifyToken, createUser);
         app.delete("/user/delete", utils.verifyToken, deleteUser);
         app.put("/user/update", utils.verifyToken, updateUser);
